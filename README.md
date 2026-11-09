@@ -39,7 +39,7 @@ Interactive web dashboard prototype for a Maruti Suzuki sales analytics scenario
 HTML, Tailwind CSS, JavaScript, Chart.js
 
 ## Files
-- [maruti_dashboard.html](maruti_dashboard.html): open in a browser to view the dashboard
+- https://vishalc-analyst.github.io/Maruti-Sales-Dashboard/ : open in a browser to view the dashboard
 
 ## Author
 Vishal C | Business Analyst
