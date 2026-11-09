@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maruti Suzuki Executive Analytics Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .bg-maruti-blue { background-color: #003399; }
+        .text-maruti-blue { color: #003399; }
+        .border-maruti-blue { border-color: #003399; }
+        .bg-maruti-red { background-color: #E2000F; }
+        .text-maruti-red { color: #E2000F; }
+        /* Solid dimensions to ensure charts render perfectly on Mac Safari/Chrome */
+        .chart-container { position: relative; height: 280px; width: 100%; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen font-sans">
+
+    <header class="bg-maruti-blue text-white shadow-md px-6 py-4 flex flex-col md:flex-row justify-between items-center border-b-4 border-red-600">
+        <div class="flex items-center space-x-4 mb-4 md:mb-0">
+            <div class="bg-white px-3 py-1.5 rounded shadow text-xl font-black text-maruti-blue tracking-tighter">
+                MS
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-wide">MARUTI SUZUKI INDIA LTD.</h1>
+                <p class="text-xs text-blue-200 uppercase font-medium tracking-widest">Executive Operations & BI Dashboard</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 w-full md:w-auto">
+            <div>
+                <label class="block text-[10px] text-blue-200 uppercase font-semibold mb-1">Year</label>
+                <select id="yearFilter" class="bg-blue-900 text-white text-xs rounded border border-blue-700 px-2 py-1.5 w-full focus:outline-none">
+                    <option value="All">All Years</option>
+                    <option value="2022">2022</option>
+                    <option value="2023">2023</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[10px] text-blue-200 uppercase font-semibold mb-1">Region</label>
+                <select id="regionFilter" class="bg-blue-900 text-white text-xs rounded border border-blue-700 px-2 py-1.5 w-full focus:outline-none">
+                    <option value="All">All Regions</option>
+                    <option value="North">North Region</option>
+                    <option value="South">South Region</option>
+                    <option value="East">East Region</option>
+                    <option value="West">West Region</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[10px] text-blue-200 uppercase font-semibold mb-1">Manager</label>
+                <select id="managerFilter" class="bg-blue-900 text-white text-xs rounded border border-blue-700 px-2 py-1.5 w-full focus:outline-none">
+                    <option value="All">All Managers</option>
+                    <option value="P. Banerjee">P. Banerjee</option>
+                    <option value="S. Srivastava">S. Srivastava</option>
+                    <option value="B. Dheer">B. Dheer</option>
+                    <option value="R.S. Akella">R.S. Akella</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[10px] text-blue-200 uppercase font-semibold mb-1">Segment</label>
+                <select id="categoryFilter" class="bg-blue-900 text-white text-xs rounded border border-blue-700 px-2 py-1.5 w-full focus:outline-none">
+                    <option value="All">All Segments</option>
+                    <option value="Hatchback">Hatchback (Swift)</option>
+                    <option value="SUV">SUV (Brezza)</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-6 space-y-6">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 border-l-4 border-blue-800">
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Gross Revenue</p>
+                <h3 id="kpiSales" class="text-xl font-bold text-gray-900 mt-1">₹0</h3>
+                <p class="text-[10px] text-gray-400 mt-1">Sum of Order Value</p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 border-l-4 border-emerald-600">
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Net Profit</p>
+                <h3 id="kpiProfit" class="text-xl font-bold text-emerald-600 mt-1">₹0</h3>
+                <p class="text-[10px] text-gray-400 mt-1">Realised Margin (12%)</p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 border-l-4 border-purple-600">
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Units Sold (Cars)</p>
+                <h3 id="kpiQuantity" class="text-xl font-bold text-purple-700 mt-1">0</h3>
+                <p class="text-[10px] text-gray-400 mt-1">Total Quantity log</p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 border-l-4 border-amber-500">
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Bookings</p>
+                <h3 id="kpiOrders" class="text-xl font-bold text-amber-600 mt-1">0</h3>
+                <p class="text-[10px] text-gray-400 mt-1">Pipeline Order count</p>
+            </div>
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 border-l-4 border-red-600">
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Cancellation Rate</p>
+                <h3 id="kpiCancelRate" class="text-xl font-bold text-red-600 mt-1">0.00%</h3>
+                <p class="text-[10px] text-gray-400 mt-1">Returned Ratio</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 lg:col-span-2">
+                <div class="border-b border-gray-100 pb-2 mb-4 flex justify-between items-center">
+                    <h4 class="text-xs font-bold uppercase tracking-wide text-gray-700">📈 Sales Momentum Timeline</h4>
+                    <span class="text-[10px] bg-blue-50 text-maruti-blue px-2 py-0.5 rounded font-medium">Monthly Trend</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+                <div class="border-b border-gray-100 pb-2 mb-4 flex justify-between items-center">
+                    <h4 class="text-xs font-bold uppercase tracking-wide text-gray-700">🚗 Segment & Vehicle Share</h4>
+                    <span class="text-[10px] bg-red-50 text-maruti-red px-2 py-0.5 rounded font-medium">Product Mix</span>
+                </div>
+                <div class="chart-container flex items-center justify-center">
+                    <canvas id="productMixChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 lg:col-span-3">
+                <div class="border-b border-gray-100 pb-2 mb-4 flex justify-between items-center">
+                    <h4 class="text-xs font-bold uppercase tracking-wide text-gray-700">🏆 Regional Manager Leaderboard</h4>
+                    <span class="text-[10px] bg-purple-50 text-purple-700 px-2 py-0.5 rounded font-medium">Performance Rankings</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="leaderboardChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <footer class="bg-gray-800 text-gray-400 text-center py-4 text-xs mt-12 border-t border-gray-700">
+        <p>© 2026 Maruti Suzuki India Ltd. Internal BI Platform. Built via Generative Business Intelligence pipelines.</p>
+    </footer>
+
+    <script>
+        const dashboardData = [];
+        const regions = [
+            { name: "East", manager: "B. Dheer" },
+            { name: "North", manager: "P. Banerjee" },
+            { name: "South", manager: "S. Srivastava" },
+            { name: "West", manager: "R.S. Akella" }
+        ];
+        const products = [
+            { name: "Swift", category: "Hatchback", price: 600000, margin: 0.12 },
+            { name: "Brezza", category: "SUV", price: 900000, margin: 0.12 }
+        ];
+
+        let baseSeed = 42;
+        function pseudoRandom() {
+            let x = Math.sin(baseSeed++) * 10000;
+            return x - Math.floor(x);
+        }
+
+        for (let year = 2022; year <= 2025; year++) {
+            for (let month = 1; month <= 12; month++) {
+                const ymString = year + "-" + String(month).padStart(2, '0');
+                regions.forEach(reg => {
+                    products.forEach(prod => {
+                        let orderMultiplier = Math.floor(pseudoRandom() * 4) + 1;
+                        let qty = Math.floor(pseudoRandom() * 15) + 5;
+                        let salesValue = prod.price * qty;
+                        let profitValue = salesValue * prod.margin;
+                        let isCancelled = (pseudoRandom() < 0.02 && dashboardData.filter(d => d.Returned === 'Yes').length < 8) ? "Yes" : "No";
+
+                        dashboardData.push({
+                            "YearMonth": ymString,
+                            "Region": reg.name,
+                            "Manager": reg.manager,
+                            "Category": prod.category,
+                            "Product Name": prod.name,
+                            "Returned": isCancelled,
+                            "sales": salesValue,
+                            "profit": profitValue,
+                            "quantity": qty,
+                            "orders": orderMultiplier
+                        });
+                    });
+                });
+            }
+        }
+
+        let timelineChartInstance = null;
+        let productMixChartInstance = null;
+        let leaderboardChartInstance = null;
+
+        function renderDashboard() {
+            const selectedYear = document.getElementById('yearFilter').value;
+            const selectedRegion = document.getElementById('regionFilter').value;
+            const selectedManager = document.getElementById('managerFilter').value;
+            const selectedCategory = document.getElementById('categoryFilter').value;
+
+            let filtered = dashboardData.filter(row => {
+                const rowYear = row.YearMonth.split('-')[0];
+                if (selectedYear !== 'All' && rowYear !== selectedYear) return false;
+                if (selectedRegion !== 'All' && row.Region !== selectedRegion) return false;
+                if (selectedManager !== 'All' && row.Manager !== selectedManager) return false;
+                if (selectedCategory !== 'All' && row.Category !== selectedCategory) return false;
+                return true;
+            });
+
+            let grossSales = 0;
+            let netProfit = 0;
+            let totalQty = 0;
+            let totalOrders = 0;
+            let cancelledOrders = 0;
+
+            let timelineMap = {};
+            let productMap = {'Swift': 0, 'Brezza': 0};
+            let managerMap = { 'P. Banerjee': 0, 'S. Srivastava': 0, 'B. Dheer': 0, 'R.S. Akella': 0 };
+
+            filtered.forEach(row => {
+                grossSales += row.sales;
+                netProfit += row.profit;
+                totalQty += row.quantity;
+                totalOrders += row.orders;
+                if (row.Returned === 'Yes') {
+                    cancelledOrders += row.orders;
+                }
+
+                if (!timelineMap[row.YearMonth]) {
+                    timelineMap[row.YearMonth] = 0;
+                }
+                timelineMap[row.YearMonth] += row.sales;
+
+                if (productMap[row['Product Name']] !== undefined) {
+                    productMap[row['Product Name']] += row.sales;
+                }
+
+                if (managerMap[row.Manager] !== undefined) {
+                    managerMap[row.Manager] += row.sales;
+                }
+            });
+
+            const cancelRate = totalOrders > 0 ? ((cancelledOrders / totalOrders) * 100).toFixed(2) + '%' : '0.00%';
+
+            document.getElementById('kpiSales').innerText = '₹' + (grossSales / 10000000).toFixed(2) + ' Cr';
+            document.getElementById('kpiProfit').innerText = '₹' + (netProfit / 10000000).toFixed(2) + ' Cr';
+            document.getElementById('kpiQuantity').innerText = totalQty.toLocaleString('en-IN');
+            document.getElementById('kpiOrders').innerText = totalOrders.toLocaleString('en-IN');
+            document.getElementById('kpiCancelRate').innerText = cancelRate;
+
+            const sortedMonths = Object.keys(timelineMap).sort();
+            const timelineValues = sortedMonths.map(m => timelineMap[m]);
+
+            if (timelineChartInstance) timelineChartInstance.destroy();
+            timelineChartInstance = new Chart(document.getElementById('timelineChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: sortedMonths,
+                    datasets: [{
+                        label: 'Gross Sales (₹)',
+                        data: timelineValues,
+                        borderColor: '#003399',
+                        backgroundColor: 'rgba(0, 51, 153, 0.04)',
+                        fill: true,
+                        tension: 0.15,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { ticks: { callback: v => '₹' + (v/10000000).toFixed(1) + ' Cr' } } }
+                }
+            });
+
+            if (productMixChartInstance) productMixChartInstance.destroy();
+            productMixChartInstance = new Chart(document.getElementById('productMixChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Swift', 'Brezza'],
+                    datasets: [{
+                        data: [productMap['Swift'], productMap['Brezza']],
+                        backgroundColor: ['#003399', '#E2000F'],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } }
+                }
+            });
+
+            const mgrLabels = Object.keys(managerMap);
+            const mgrValues = mgrLabels.map(m => managerMap[m]);
+
+            if (leaderboardChartInstance) leaderboardChartInstance.destroy();
+            leaderboardChartInstance = new Chart(document.getElementById('leaderboardChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: mgrLabels,
+                    datasets: [{
+                        label: 'Sales (₹)',
+                        data: mgrValues,
+                        backgroundColor: '#003399',
+                        borderRadius: 4,
+                        barThickness: 20
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { ticks: { callback: v => '₹' + (v/10000000).toFixed(1) + ' Cr' } } }
+                }
+            });
+        }
+
+        document.getElementById('yearFilter').addEventListener('change', renderDashboard);
+        document.getElementById('regionFilter').addEventListener('change', renderDashboard);
+        document.getElementById('managerFilter').addEventListener('change', renderDashboard);
+        document.getElementById('categoryFilter').addEventListener('change', renderDashboard);
+
+        renderDashboard();
+    </script>
+</body>
+</html>
